@@ -1,0 +1,127 @@
+name: "Sub-Task"
+description: "An implementable unit of work within a user story. Covers a single logical change."
+title: "[TASK] <Description>"
+labels: ["sub-task"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Sub-Task
+        One logical change per task (SW Agreement Sec 3.1). Each sub-task should map to approximately one commit or one small PR.
+
+  - type: input
+    id: parent_story
+    attributes:
+      label: Parent Story
+      description: "Parent story issue number and ID (e.g., #10 US-101)"
+      placeholder: "#10 US-101"
+    validations:
+      required: true
+
+  - type: input
+    id: epic
+    attributes:
+      label: Epic
+      description: "Parent epic issue number and ID (e.g., #5 E1)"
+      placeholder: "#5 E1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Milestone
+      options:
+        - M1
+        - M2
+        - M3
+        - M4
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Task Type
+      options:
+        - implementation
+        - test
+        - infrastructure
+        - documentation
+        - design
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: "What specifically needs to be done?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: completion_criteria
+    attributes:
+      label: Completion Criteria
+      description: "Concrete, verifiable conditions for this task being done."
+      placeholder: |
+        - [ ] Specific deliverable or verification
+        - [ ] Specific deliverable or verification
+    validations:
+      required: true
+
+  - type: textarea
+    id: approach
+    attributes:
+      label: Implementation Approach
+      description: "How will this be implemented? Be specific: functions, classes, files."
+    validations:
+      required: false
+
+  - type: textarea
+    id: files
+    attributes:
+      label: Files to Create/Modify
+      placeholder: |
+        | File | Action | Description |
+        |------|--------|-------------|
+        | `path` | Create / Modify | What changes |
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: code_standards
+    attributes:
+      label: Code Standards Checklist (SW Agreement Sec 4.2)
+      options:
+        - label: "Naming conventions followed"
+        - label: "No magic numbers — literals defined as named constants"
+        - label: "No global variables"
+        - label: "RAII used for all resources (if C++)"
+        - label: "Inputs validated and sanitized"
+        - label: "Doxygen headers on .hpp / GoDoc on exported Go types"
+        - label: "Inline comments in .cpp are meaningful, not redundant"
+
+  - type: textarea
+    id: testing
+    attributes:
+      label: Testing
+      description: "What tests does this task add or require?"
+      placeholder: |
+        | Test | Type | Verifies |
+        |------|------|----------|
+        | Test name | Unit / Integration / Load | What it proves |
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      placeholder: |
+        - **Blocked by:** #issue or "none"
+        - **Blocks:** #issue or "none"
+    validations:
+      required: false

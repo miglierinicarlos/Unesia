@@ -1,0 +1,202 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 920" font-family="Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#4A90D9"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#70AD47"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#E67E22"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#C0392B"/>
+    </marker>
+    <filter id="shadow" x="-2%" y="-2%" width="104%" height="104%">
+      <feDropShadow dx="1" dy="1" stdDeviation="2" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="920" fill="#FAFBFC" rx="8"/>
+
+  <!-- Title -->
+  <text x="480" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#1B3A5C">eop-server — Sequence Diagram: Full Client Lifecycle (v0.1)</text>
+  <text x="480" y="50" text-anchor="middle" font-size="11" fill="#888">connect → handshake → register → query → list → heartbeat → disconnect</text>
+
+  <!-- ================================================================== -->
+  <!-- Participants -->
+  <!-- ================================================================== -->
+
+  <!-- eop-client -->
+  <rect x="80" y="70" width="140" height="45" rx="6" fill="#7B7B7B" filter="url(#shadow)"/>
+  <text x="150" y="90" text-anchor="middle" font-size="11" fill="white" font-weight="bold">eop-client</text>
+  <text x="150" y="105" text-anchor="middle" font-size="9" fill="#DDD">C99 library</text>
+
+  <!-- SocketAcceptor -->
+  <rect x="310" y="70" width="140" height="45" rx="6" fill="#4A90D9" filter="url(#shadow)"/>
+  <text x="380" y="90" text-anchor="middle" font-size="11" fill="white" font-weight="bold">SocketAcceptor</text>
+  <text x="380" y="105" text-anchor="middle" font-size="9" fill="#D0E4F7">bind / listen / accept</text>
+
+  <!-- MessageHandler -->
+  <rect x="530" y="70" width="140" height="45" rx="6" fill="#5B9BD5" filter="url(#shadow)"/>
+  <text x="600" y="90" text-anchor="middle" font-size="11" fill="white" font-weight="bold">MessageHandler</text>
+  <text x="600" y="105" text-anchor="middle" font-size="9" fill="#D0E4F7">parse + dispatch</text>
+
+  <!-- NodeRegistry -->
+  <rect x="750" y="70" width="140" height="45" rx="6" fill="#E67E22" filter="url(#shadow)"/>
+  <text x="820" y="90" text-anchor="middle" font-size="11" fill="white" font-weight="bold">NodeRegistry</text>
+  <text x="820" y="105" text-anchor="middle" font-size="9" fill="#FDEBD0">in-memory · shared_mutex</text>
+
+  <!-- ================================================================== -->
+  <!-- Lifelines -->
+  <!-- ================================================================== -->
+  <line x1="150" y1="115" x2="150" y2="890" stroke="#999" stroke-width="1" stroke-dasharray="6,4"/>
+  <line x1="380" y1="115" x2="380" y2="890" stroke="#999" stroke-width="1" stroke-dasharray="6,4"/>
+  <line x1="600" y1="115" x2="600" y2="890" stroke="#999" stroke-width="1" stroke-dasharray="6,4"/>
+  <line x1="820" y1="115" x2="820" y2="890" stroke="#999" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <!-- ================================================================== -->
+  <!-- Phase 1: TCP Connect + Handshake -->
+  <!-- ================================================================== -->
+  <rect x="20" y="135" width="920" height="110" rx="4" fill="#E8F4FD" fill-opacity="0.5" stroke="#4A90D9" stroke-width="0.5"/>
+  <text x="30" y="150" font-size="10" font-weight="bold" fill="#1B3A5C">Phase 1 — TCP Connect + Welcome Handshake</text>
+
+  <!-- SYN -->
+  <line x1="150" y1="170" x2="374" y2="170" stroke="#4A90D9" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+  <text x="262" y="164" text-anchor="middle" font-size="9" fill="#4A90D9" font-weight="bold">TCP SYN → connect(host, port)</text>
+
+  <!-- SYN-ACK -->
+  <line x1="380" y1="195" x2="156" y2="195" stroke="#4A90D9" stroke-width="1.5" marker-end="url(#arrow-blue)" stroke-dasharray="6,3"/>
+  <text x="262" y="189" text-anchor="middle" font-size="9" fill="#4A90D9">TCP SYN-ACK → accept()</text>
+
+  <!-- Welcome -->
+  <line x1="380" y1="220" x2="156" y2="220" stroke="#70AD47" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <text x="262" y="214" text-anchor="middle" font-size="9" fill="#70AD47" font-weight="bold">Welcome {version, timestamp, session_id}</text>
+
+  <!-- ================================================================== -->
+  <!-- Phase 2: REGISTER -->
+  <!-- ================================================================== -->
+  <rect x="20" y="255" width="920" height="145" rx="4" fill="#E8F8E8" fill-opacity="0.5" stroke="#70AD47" stroke-width="0.5"/>
+  <text x="30" y="270" font-size="10" font-weight="bold" fill="#1B3A5C">Phase 2 — Node Registration (0x01 REGISTER)</text>
+
+  <!-- REGISTER request -->
+  <line x1="150" y1="290" x2="594" y2="290" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="372" y="284" text-anchor="middle" font-size="9" fill="#333" font-weight="bold">REGISTER {node_id, bunker_name, ip_address, capacity}</text>
+  <text x="372" y="296" text-anchor="middle" font-size="8" fill="#888">msg_type=0x01 | msg_id=1</text>
+
+  <!-- Handler -> Registry write -->
+  <line x1="600" y1="315" x2="814" y2="315" stroke="#C0392B" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+  <text x="707" y="309" text-anchor="middle" font-size="9" fill="#C0392B">write lock → insert node</text>
+
+  <!-- Registry -> Handler OK -->
+  <line x1="820" y1="340" x2="606" y2="340" stroke="#70AD47" stroke-width="1.5" marker-end="url(#arrow-green)" stroke-dasharray="6,3"/>
+  <text x="713" y="334" text-anchor="middle" font-size="9" fill="#70AD47">OK (node stored)</text>
+
+  <!-- ACK response -->
+  <line x1="600" y1="370" x2="156" y2="370" stroke="#70AD47" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <text x="378" y="364" text-anchor="middle" font-size="9" fill="#70AD47" font-weight="bold">ACK {ref_message_id=1, node_id}</text>
+  <text x="378" y="376" text-anchor="middle" font-size="8" fill="#888">msg_type=0x02 | msg_id=1</text>
+
+  <!-- ================================================================== -->
+  <!-- Phase 3: QUERY_NODE -->
+  <!-- ================================================================== -->
+  <rect x="20" y="410" width="920" height="140" rx="4" fill="#FFF8E1" fill-opacity="0.5" stroke="#E67E22" stroke-width="0.5"/>
+  <text x="30" y="425" font-size="10" font-weight="bold" fill="#1B3A5C">Phase 3 — Query Node (0x04 QUERY_NODE)</text>
+
+  <!-- QUERY request -->
+  <line x1="150" y1="445" x2="594" y2="445" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="372" y="439" text-anchor="middle" font-size="9" fill="#333" font-weight="bold">QUERY_NODE {node_id: "bunker-42"}</text>
+  <text x="372" y="451" text-anchor="middle" font-size="8" fill="#888">msg_type=0x04 | msg_id=2</text>
+
+  <!-- Handler -> Registry read -->
+  <line x1="600" y1="470" x2="814" y2="470" stroke="#2980B9" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+  <text x="707" y="464" text-anchor="middle" font-size="9" fill="#2980B9">read lock → lookup node</text>
+
+  <!-- Registry -> Handler result -->
+  <line x1="820" y1="495" x2="606" y2="495" stroke="#70AD47" stroke-width="1.5" marker-end="url(#arrow-green)" stroke-dasharray="6,3"/>
+  <text x="713" y="489" text-anchor="middle" font-size="9" fill="#70AD47">node metadata</text>
+
+  <!-- ACK response with node data -->
+  <line x1="600" y1="520" x2="156" y2="520" stroke="#70AD47" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <text x="378" y="514" text-anchor="middle" font-size="9" fill="#70AD47" font-weight="bold">ACK {ref_message_id=2, node_id, bunker_name, status, ...}</text>
+  <text x="378" y="526" text-anchor="middle" font-size="8" fill="#888">msg_type=0x02 | msg_id=2</text>
+
+  <!-- ================================================================== -->
+  <!-- Phase 4: LIST_NODES -->
+  <!-- ================================================================== -->
+  <rect x="20" y="560" width="920" height="110" rx="4" fill="#F3E5F5" fill-opacity="0.5" stroke="#8E44AD" stroke-width="0.5"/>
+  <text x="30" y="575" font-size="10" font-weight="bold" fill="#1B3A5C">Phase 4 — List Nodes (0x05 LIST_NODES)</text>
+
+  <!-- LIST request -->
+  <line x1="150" y1="595" x2="594" y2="595" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="372" y="589" text-anchor="middle" font-size="9" fill="#333" font-weight="bold">LIST_NODES (payload_length=0)</text>
+  <text x="372" y="601" text-anchor="middle" font-size="8" fill="#888">msg_type=0x05 | msg_id=3</text>
+
+  <!-- Handler -> Registry read all -->
+  <line x1="600" y1="620" x2="814" y2="620" stroke="#2980B9" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+  <text x="707" y="614" text-anchor="middle" font-size="9" fill="#2980B9">read lock → list all</text>
+
+  <!-- ACK response with array -->
+  <line x1="600" y1="645" x2="156" y2="645" stroke="#70AD47" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <text x="378" y="639" text-anchor="middle" font-size="9" fill="#70AD47" font-weight="bold">ACK {ref_message_id=3, nodes: [...]}</text>
+  <text x="378" y="651" text-anchor="middle" font-size="8" fill="#888">msg_type=0x02 | msg_id=3</text>
+
+  <!-- ================================================================== -->
+  <!-- Phase 5: HEARTBEAT -->
+  <!-- ================================================================== -->
+  <rect x="20" y="680" width="920" height="85" rx="4" fill="#FFEBEE" fill-opacity="0.5" stroke="#C0392B" stroke-width="0.5"/>
+  <text x="30" y="695" font-size="10" font-weight="bold" fill="#1B3A5C">Phase 5 — Heartbeat (0x06 HEARTBEAT) — No response</text>
+
+  <!-- HEARTBEAT -->
+  <line x1="150" y1="715" x2="594" y2="715" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="372" y="709" text-anchor="middle" font-size="9" fill="#333" font-weight="bold">HEARTBEAT (payload_length=0)</text>
+  <text x="372" y="721" text-anchor="middle" font-size="8" fill="#888">msg_type=0x06 | msg_id=4</text>
+
+  <!-- Handler -> Registry update last_seen -->
+  <line x1="600" y1="740" x2="814" y2="740" stroke="#C0392B" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+  <text x="707" y="734" text-anchor="middle" font-size="9" fill="#C0392B">write lock → update last_seen_at</text>
+
+  <!-- Note: no response -->
+  <rect x="620" y="748" width="170" height="18" rx="3" fill="#FFF3CD"/>
+  <text x="705" y="760" text-anchor="middle" font-size="8" fill="#856404">Server does NOT respond (ADR-003)</text>
+
+  <!-- ================================================================== -->
+  <!-- Phase 6: Disconnect -->
+  <!-- ================================================================== -->
+  <rect x="20" y="775" width="920" height="105" rx="4" fill="#F5F5F5" fill-opacity="0.5" stroke="#7B7B7B" stroke-width="0.5"/>
+  <text x="30" y="790" font-size="10" font-weight="bold" fill="#1B3A5C">Phase 6 — Graceful Disconnect</text>
+
+  <!-- shutdown -->
+  <line x1="150" y1="810" x2="374" y2="810" stroke="#7B7B7B" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="262" y="804" text-anchor="middle" font-size="9" fill="#555" font-weight="bold">shutdown(SHUT_RDWR) + close()</text>
+
+  <!-- Acceptor detects EOF -->
+  <line x1="380" y1="835" x2="594" y2="835" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="487" y="829" text-anchor="middle" font-size="9" fill="#555">recv() returns 0 → EOF detected</text>
+
+  <!-- Handler -> Registry mark offline -->
+  <line x1="600" y1="855" x2="814" y2="855" stroke="#C0392B" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+  <text x="707" y="849" text-anchor="middle" font-size="9" fill="#C0392B">write lock → mark OFFLINE</text>
+
+  <!-- Note: cleanup -->
+  <rect x="370" y="868" width="240" height="18" rx="3" fill="#FFF3CD"/>
+  <text x="490" y="880" text-anchor="middle" font-size="8" fill="#856404">Worker closes fd, session resources freed (RAII)</text>
+
+  <!-- ================================================================== -->
+  <!-- Legend -->
+  <!-- ================================================================== -->
+  <rect x="20" y="895" width="920" height="20" rx="4" fill="none"/>
+  <text x="30" y="910" font-size="8" fill="#888">ADR-004 · Squad 404-motivation-lost · v0.1 · Protocol: ADR-003 · Concurrency: ADR-002 (Thread Pool)</text>
+  <line x1="550" y1="907" x2="580" y2="907" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="590" y="910" font-size="8" fill="#888">Request</text>
+  <line x1="650" y1="907" x2="680" y2="907" stroke="#70AD47" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+  <text x="690" y="910" font-size="8" fill="#888">Response</text>
+  <line x1="740" y1="907" x2="770" y2="907" stroke="#C0392B" stroke-width="1.5" marker-end="url(#arrow-red)"/>
+  <text x="780" y="910" font-size="8" fill="#888">Write lock</text>
+  <line x1="840" y1="907" x2="870" y2="907" stroke="#2980B9" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+  <text x="880" y="910" font-size="8" fill="#888">Read lock</text>
+</svg>

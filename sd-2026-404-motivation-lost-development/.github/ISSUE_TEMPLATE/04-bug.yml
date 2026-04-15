@@ -1,0 +1,139 @@
+name: "Bug Report"
+description: "Report a defect found during development, testing, or review."
+title: "[BUG] <Short Description>"
+labels: ["bug", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug Report
+        Provide enough detail so the team can reproduce, prioritize, and fix the issue.
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+
+  - type: dropdown
+    id: found_in
+    attributes:
+      label: Found in
+      description: "Release version where the bug was found"
+      options:
+        - v0.1
+        - v0.2
+        - v0.3
+        - v1.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: "Affected component"
+      options:
+        - eop-server
+        - client-lib
+        - hpc-engine
+        - api-gateway
+        - edge-ingestor
+        - firmware
+        - k8s
+        - monitoring
+        - other
+    validations:
+      required: true
+
+  - type: input
+    id: related_story
+    attributes:
+      label: Related Story
+      description: "Issue number of the related user story (if applicable)"
+      placeholder: "#issue"
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: "Clear description of the bug. What is wrong?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      placeholder: |
+        1. Step 1
+        2. Step 2
+        3. Step 3
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: "What SHOULD happen? Reference the relevant AC if applicable."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: "What ACTUALLY happens? Include error messages, logs, or stack traces."
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: "Paste logs, sanitizer output, screenshots, or test output."
+      placeholder: |
+        ```
+        paste output here
+        ```
+    validations:
+      required: false
+
+  - type: textarea
+    id: root_cause
+    attributes:
+      label: Root Cause Analysis
+      description: "Fill after investigation. Why did this happen and how will it be fixed?"
+    validations:
+      required: false
+
+  - type: textarea
+    id: files_affected
+    attributes:
+      label: Files Affected
+      placeholder: |
+        | File | Change |
+        |------|--------|
+        | `path` | Description |
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: regression_prevention
+    attributes:
+      label: Regression Prevention
+      options:
+        - label: "Unit test added that reproduces the bug"
+        - label: "Test fails without the fix, passes with it"
+        - label: "Sanitizers (ASan/TSan) green after fix"
+        - label: "No other tests broken by the fix"

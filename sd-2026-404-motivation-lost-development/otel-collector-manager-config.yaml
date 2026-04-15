@@ -1,0 +1,4 @@
+# otel-collector-manager-config.yaml
+# Configura el manager que supervisa el collector.
+server_endpoint: http://signoz:8080
+agentType: "deployment"
