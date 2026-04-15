@@ -1,0 +1,15 @@
+# k8s/configmap.yaml
+# AC6 US-108: toda la config en ConfigMap, sin valores hardcodeados en la imagen.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eop-server-config
+  namespace: default
+data:
+  EOP_PORT: "9026"
+  EOP_IDLE_TIMEOUT: "30"
+  EOP_THREAD_POOL_SIZE: "16"
+  EOP_MAX_CLIENTS: "10000"
+  EOP_HEARTBEAT_INTERVAL: "5"
+  OTEL_SERVICE_NAME: "eop-server"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"

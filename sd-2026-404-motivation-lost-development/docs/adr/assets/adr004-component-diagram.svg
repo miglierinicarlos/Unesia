@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 720" font-family="Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#666"/>
+    </marker>
+    <filter id="shadow" x="-2%" y="-2%" width="104%" height="104%">
+      <feDropShadow dx="1" dy="1" stdDeviation="2" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="720" fill="#FAFBFC" rx="8"/>
+
+  <!-- Title -->
+  <text x="480" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#1B3A5C">eop-server — Internal Component Architecture (v0.1)</text>
+
+  <!-- eop-server boundary -->
+  <rect x="160" y="50" width="640" height="570" rx="10" fill="none" stroke="#1B3A5C" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="170" y="70" font-size="11" fill="#1B3A5C" font-weight="bold">eop-server process</text>
+
+  <!-- Client (external) -->
+  <rect x="10" y="170" width="120" height="50" rx="6" fill="#7B7B7B" filter="url(#shadow)"/>
+  <text x="70" y="191" text-anchor="middle" font-size="11" fill="white" font-weight="bold">eop-client</text>
+  <text x="70" y="206" text-anchor="middle" font-size="9" fill="#DDD">(C library)</text>
+
+  <!-- SocketAcceptor -->
+  <rect x="200" y="170" width="140" height="50" rx="6" fill="#4A90D9" filter="url(#shadow)"/>
+  <text x="270" y="191" text-anchor="middle" font-size="11" fill="white" font-weight="bold">SocketAcceptor</text>
+  <text x="270" y="206" text-anchor="middle" font-size="9" fill="#D0E4F7">bind / listen / accept</text>
+
+  <!-- Arrow: Client -> SocketAcceptor -->
+  <line x1="130" y1="195" x2="196" y2="195" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="163" y="188" text-anchor="middle" font-size="8" fill="#888">TCP connect</text>
+
+  <!-- WorkQueue -->
+  <rect x="410" y="170" width="140" height="50" rx="6" fill="#4A90D9" filter="url(#shadow)"/>
+  <text x="480" y="191" text-anchor="middle" font-size="11" fill="white" font-weight="bold">WorkQueue</text>
+  <text x="480" y="206" text-anchor="middle" font-size="9" fill="#D0E4F7">mutex + cond_var</text>
+
+  <!-- Arrow: SocketAcceptor -> WorkQueue -->
+  <line x1="340" y1="195" x2="406" y2="195" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="373" y="188" text-anchor="middle" font-size="8" fill="#888">enqueue fd</text>
+
+  <!-- ThreadPool -->
+  <rect x="620" y="170" width="140" height="50" rx="6" fill="#4A90D9" filter="url(#shadow)"/>
+  <text x="690" y="191" text-anchor="middle" font-size="11" fill="white" font-weight="bold">ThreadPool</text>
+  <text x="690" y="206" text-anchor="middle" font-size="9" fill="#D0E4F7">N workers (ADR-002)</text>
+
+  <!-- Arrow: WorkQueue -> ThreadPool -->
+  <line x1="550" y1="195" x2="616" y2="195" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="583" y="188" text-anchor="middle" font-size="8" fill="#888">dequeue</text>
+
+  <!-- MessageHandler -->
+  <rect x="410" y="280" width="160" height="50" rx="6" fill="#5B9BD5" filter="url(#shadow)"/>
+  <text x="490" y="301" text-anchor="middle" font-size="11" fill="white" font-weight="bold">MessageHandler</text>
+  <text x="490" y="316" text-anchor="middle" font-size="9" fill="#D0E4F7">parse envelope + dispatch</text>
+
+  <!-- Arrow: ThreadPool -> MessageHandler -->
+  <line x1="690" y1="220" x2="690" y2="295" stroke="#666" stroke-width="1.5"/>
+  <line x1="690" y1="295" x2="574" y2="295" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="640" y="260" text-anchor="middle" font-size="8" fill="#888">parse message</text>
+
+  <!-- RegisterHandler -->
+  <rect x="200" y="390" width="150" height="50" rx="6" fill="#70AD47" filter="url(#shadow)"/>
+  <text x="275" y="411" text-anchor="middle" font-size="11" fill="white" font-weight="bold">RegisterHandler</text>
+  <text x="275" y="426" text-anchor="middle" font-size="9" fill="#D4EBC8">0x01 REGISTER</text>
+
+  <!-- QueryHandler -->
+  <rect x="405" y="390" width="170" height="50" rx="6" fill="#70AD47" filter="url(#shadow)"/>
+  <text x="490" y="411" text-anchor="middle" font-size="11" fill="white" font-weight="bold">QueryHandler</text>
+  <text x="490" y="426" text-anchor="middle" font-size="9" fill="#D4EBC8">0x04/0x05 QUERY + LIST</text>
+
+  <!-- HeartbeatHandler -->
+  <rect x="625" y="390" width="150" height="50" rx="6" fill="#70AD47" filter="url(#shadow)"/>
+  <text x="700" y="411" text-anchor="middle" font-size="11" fill="white" font-weight="bold">HeartbeatHandler</text>
+  <text x="700" y="426" text-anchor="middle" font-size="9" fill="#D4EBC8">0x06 HEARTBEAT</text>
+
+  <!-- Arrows: MessageHandler -> Handlers -->
+  <line x1="430" y1="330" x2="275" y2="386" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="490" y1="330" x2="490" y2="386" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="550" y1="330" x2="700" y2="386" stroke="#666" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- NodeRegistry -->
+  <rect x="370" y="500" width="180" height="55" rx="25" fill="#E67E22" filter="url(#shadow)"/>
+  <text x="460" y="521" text-anchor="middle" font-size="11" fill="white" font-weight="bold">NodeRegistry</text>
+  <text x="460" y="537" text-anchor="middle" font-size="9" fill="#FDEBD0">in-memory · shared_mutex</text>
+
+  <!-- Arrows: Handlers -> NodeRegistry -->
+  <line x1="275" y1="440" x2="275" y2="520" stroke="#C0392B" stroke-width="1.5"/>
+  <line x1="275" y1="520" x2="366" y2="520" stroke="#C0392B" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="290" y="485" font-size="8" fill="#C0392B" font-weight="bold">write lock</text>
+
+  <line x1="490" y1="440" x2="490" y2="496" stroke="#2980B9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="510" y="475" font-size="8" fill="#2980B9" font-weight="bold">read lock</text>
+
+  <line x1="700" y1="440" x2="700" y2="520" stroke="#C0392B" stroke-width="1.5"/>
+  <line x1="700" y1="520" x2="554" y2="520" stroke="#C0392B" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="680" y="485" font-size="8" fill="#C0392B" font-weight="bold">write lock</text>
+
+  <!-- OTel Instrumentation -->
+  <rect x="200" y="580" width="160" height="40" rx="6" fill="#27AE60" filter="url(#shadow)"/>
+  <text x="280" y="605" text-anchor="middle" font-size="10" fill="white" font-weight="bold">OTel Instrumentation</text>
+
+  <!-- Logger -->
+  <rect x="580" y="580" width="160" height="40" rx="6" fill="#27AE60" filter="url(#shadow)"/>
+  <text x="660" y="605" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Logger · JSON stdout</text>
+
+  <!-- Arrows: Handlers -> OTel (simplified) -->
+  <line x1="260" y1="440" x2="260" y2="576" stroke="#27AE60" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <line x1="475" y1="440" x2="300" y2="576" stroke="#27AE60" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+  <line x1="685" y1="440" x2="680" y2="576" stroke="#27AE60" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+
+  <!-- External: OTel Collector + SigNoz -->
+  <rect x="10" y="640" width="130" height="40" rx="6" fill="#8E44AD" filter="url(#shadow)"/>
+  <text x="75" y="665" text-anchor="middle" font-size="10" fill="white" font-weight="bold">OTel Collector</text>
+
+  <rect x="10" y="690" width="130" height="22" rx="4" fill="#9B59B6"/>
+  <text x="75" y="706" text-anchor="middle" font-size="9" fill="white">→ SigNoz</text>
+
+  <!-- Arrow: OTel -> Collector -->
+  <line x1="200" y1="610" x2="144" y2="646" stroke="#8E44AD" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="155" y="625" font-size="8" fill="#8E44AD">OTLP gRPC</text>
+
+  <!-- Arrow: Logger -> stdout -->
+  <rect x="810" y="640" width="120" height="40" rx="6" fill="#95A5A6" filter="url(#shadow)"/>
+  <text x="870" y="665" text-anchor="middle" font-size="10" fill="white" font-weight="bold">Container stdout</text>
+  <line x1="740" y1="610" x2="820" y2="646" stroke="#95A5A6" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="795" y="625" font-size="8" fill="#95A5A6">stdout</text>
+
+  <!-- Legend -->
+  <rect x="760" y="55" width="180" height="95" rx="4" fill="white" stroke="#DDD"/>
+  <text x="770" y="72" font-size="9" font-weight="bold" fill="#333">Legend</text>
+  <rect x="770" y="80" width="12" height="8" rx="2" fill="#4A90D9"/>
+  <text x="788" y="88" font-size="8" fill="#555">Infrastructure</text>
+  <rect x="770" y="94" width="12" height="8" rx="2" fill="#70AD47"/>
+  <text x="788" y="102" font-size="8" fill="#555">Message Handlers</text>
+  <rect x="770" y="108" width="12" height="8" rx="2" fill="#E67E22"/>
+  <text x="788" y="116" font-size="8" fill="#555">Shared State</text>
+  <rect x="770" y="122" width="12" height="8" rx="2" fill="#27AE60"/>
+  <text x="788" y="130" font-size="8" fill="#555">Observability</text>
+  <line x1="770" y1="140" x2="782" y2="140" stroke="#C0392B" stroke-width="1.5"/>
+  <text x="788" y="144" font-size="8" fill="#555">Write lock</text>
+</svg>
