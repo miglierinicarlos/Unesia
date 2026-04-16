@@ -32,12 +32,6 @@ add_executable(connect_basic_example
 )
 target_link_libraries(connect_basic_example PRIVATE eop_client_static)
 
-add_executable(eop_demo
-    examples/eop_demo.c
-)
-target_link_libraries(eop_demo PRIVATE eop_client_static)
-target_compile_options(eop_demo PRIVATE -Wno-unused-result)
-
 if(EXODUS_ENABLE_COVERAGE)
     target_compile_options(eop_client_static PRIVATE -O0 -g --coverage)
     target_link_options(eop_client_static PUBLIC --coverage)
