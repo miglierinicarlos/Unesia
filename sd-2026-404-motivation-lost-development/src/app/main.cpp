@@ -5,6 +5,7 @@
 #include "serverConfig.hpp"
 #include "sessionManager.hpp"
 #include "socketAcceptor.hpp"
+#include "prometheusMetrics.hpp"
 #include "threadPool.hpp"
 #include "workQueue.hpp"
 
@@ -120,6 +121,8 @@ int main()
                "Booting EOP Server on port " + std::to_string(config.m_port) +
                    " | Workers: " + std::to_string(threadPool.workerCount()));
 
+    PrometheusMetrics::instance().start(config.m_metricsPort);
+
     // 3. Acceptor Configuration
     auto onAccept = [&](int clientFd, const std::string& ip)
     {
@@ -132,6 +135,7 @@ int main()
     if (!acceptor.start())
     {
         logger.log(Logger::Level::ERROR, "Failed to bind SocketAcceptor. Port already in use?");
+        PrometheusMetrics::instance().shutdown();
         return 1;
     }
 
@@ -151,6 +155,8 @@ int main()
     // 5. Graceful Shutdown
     // Stop accepting new connections immediately.
     acceptor.stop();
+
+    PrometheusMetrics::instance().shutdown();
 
     // ThreadPool and WorkQueue will shut down automatically and cleanly
     // due to RAII when they go out of scope at the end of main().

@@ -76,6 +76,30 @@ static T parseEnv(const char* name, ParseRange<T> range)
     return static_cast<T>(raw.value());
 }
 
+static uint16_t parseMetricsPort()
+{
+    const auto raw = readUnsignedLong("EOP_METRICS_PORT");
+
+    if (!raw.has_value())
+    {
+        if (std::getenv("EOP_METRICS_PORT") != nullptr) // NOLINT(concurrency-mt-unsafe)
+        {
+            std::cerr << "[WARN] serverConfig: EOP_METRICS_PORT is not a valid number — using default "
+                      << ServerConfig::DEFAULT_METRICS_PORT << "\n";
+        }
+        return ServerConfig::DEFAULT_METRICS_PORT;
+    }
+
+    if (raw.value() > static_cast<unsigned long>(std::numeric_limits<uint16_t>::max()))
+    {
+        std::cerr << "[WARN] serverConfig: EOP_METRICS_PORT=" << raw.value()
+                  << " out of range — using default " << ServerConfig::DEFAULT_METRICS_PORT << "\n";
+        return ServerConfig::DEFAULT_METRICS_PORT;
+    }
+
+    return static_cast<uint16_t>(raw.value());
+}
+
 // Public factory
 
 ServerConfig ServerConfig::fromEnv()
@@ -83,6 +107,7 @@ ServerConfig ServerConfig::fromEnv()
     ServerConfig cfg {};
 
     cfg.m_port = parseEnv<uint16_t>("EOP_PORT", {1, std::numeric_limits<uint16_t>::max(), ServerConfig::DEFAULT_PORT});
+    cfg.m_metricsPort = parseMetricsPort();
     cfg.m_idleTimeoutSecs = parseEnv<uint32_t>("EOP_IDLE_TIMEOUT", {1, 3600, ServerConfig::DEFAULT_IDLE_TIMEOUT});
     cfg.m_threadPoolSize = parseEnv<uint32_t>("EOP_THREAD_POOL_SIZE", {1, 256, ServerConfig::DEFAULT_THREAD_POOL_SIZE});
     cfg.m_maxClients = parseEnv<uint32_t>("EOP_MAX_CLIENTS", {1, 100000, ServerConfig::DEFAULT_MAX_CLIENTS});

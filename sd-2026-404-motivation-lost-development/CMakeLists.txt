@@ -40,12 +40,21 @@ add_library(exodus_lib STATIC
         src/threadPool.cpp
         src/heartbeatHandler.cpp
         src/heartbeatMonitor.cpp
+        src/prometheusMetrics.cpp
 )
 
 target_include_directories(exodus_lib PUBLIC include)
 
 find_package(nlohmann_json CONFIG REQUIRED)
-target_link_libraries(exodus_lib PUBLIC nlohmann_json::nlohmann_json)
+find_package(prometheus-cpp CONFIG REQUIRED)
+find_package(Threads REQUIRED)
+
+target_link_libraries(exodus_lib PUBLIC
+        nlohmann_json::nlohmann_json
+        prometheus-cpp::core
+        prometheus-cpp::pull
+        Threads::Threads
+)
 
 if(EXODUS_ENABLE_COVERAGE)
   target_compile_options(exodus_lib PRIVATE -O0 -g --coverage)

@@ -229,3 +229,36 @@ TEST(serverConfigTest, heartbeatIntervalZeroFallsBackToDefault)
     const ServerConfig cfg = ServerConfig::fromEnv();
     EXPECT_EQ(cfg.m_heartbeatIntervalSecs, ServerConfig::DEFAULT_HEARTBEAT_INTERVAL);
 }
+
+// EOP_METRICS_PORT
+
+TEST(serverConfigTest, defaultMetricsPortWhenUnset)
+{
+    EnvGuard g("EOP_METRICS_PORT");
+    const ServerConfig cfg = ServerConfig::fromEnv();
+    EXPECT_EQ(cfg.m_metricsPort, ServerConfig::DEFAULT_METRICS_PORT);
+}
+
+TEST(serverConfigTest, metricsPortZeroDisablesExposition)
+{
+    EnvGuard g("EOP_METRICS_PORT");
+    setEnv("EOP_METRICS_PORT", "0");
+    const ServerConfig cfg = ServerConfig::fromEnv();
+    EXPECT_EQ(cfg.m_metricsPort, 0u);
+}
+
+TEST(serverConfigTest, validMetricsPortIsUsed)
+{
+    EnvGuard g("EOP_METRICS_PORT");
+    setEnv("EOP_METRICS_PORT", "9099");
+    const ServerConfig cfg = ServerConfig::fromEnv();
+    EXPECT_EQ(cfg.m_metricsPort, 9099u);
+}
+
+TEST(serverConfigTest, invalidMetricsPortNonNumericFallsBackToDefault)
+{
+    EnvGuard g("EOP_METRICS_PORT");
+    setEnv("EOP_METRICS_PORT", "xyz");
+    const ServerConfig cfg = ServerConfig::fromEnv();
+    EXPECT_EQ(cfg.m_metricsPort, ServerConfig::DEFAULT_METRICS_PORT);
+}

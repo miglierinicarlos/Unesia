@@ -14,4 +14,9 @@ spec:
     - protocol: TCP
       port: 9026
       targetPort: eop-tcp
+      name: eop-tcp
+    - protocol: TCP
+      port: 9464
+      targetPort: metrics
+      name: metrics
   type: ClusterIP

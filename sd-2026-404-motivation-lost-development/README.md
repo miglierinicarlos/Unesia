@@ -41,7 +41,7 @@ distributed tracing.
 |-----------|----------|-------------|
 | eop-server | C++17 | TCP server with thread pool, node registry, heartbeat monitor |
 | libeop_client | C99 | Client library with opaque handle pattern |
-| Observability | OTel + SigNoz | Distributed traces, structured JSON logs with trace_id |
+| Observability | OTel + SigNoz; Prometheus + Grafana | Traces and logs with trace_id; SLO dashboards (US-205) |
 | Deployment | Docker + K8s | Multi-stage build (distroless, ≤ 50 MB), liveness/readiness probes |
 
 ## Team
@@ -62,8 +62,29 @@ Launches the full stack: eop-server, OTel Collector, SigNoz, ClickHouse, ZooKeep
 make deploy-local
 ```
 
-The server accepts TCP connections on localhost:9026.
+The server accepts TCP connections on **localhost:9026**.
+Prometheus text metrics for the C++ server: **http://localhost:9464/metrics** (port from `EOP_METRICS_PORT`, default 9464; set to `0` to disable HTTP exposition).
 SigNoz UI is available at http://localhost:8080.
+
+### Prometheus and Grafana (US-205)
+
+After `make deploy-local` or `docker compose up -d`:
+
+| UI | URL | Notes |
+|----|-----|--------|
+| Grafana | http://localhost:3000 | Default user/password: `admin` / `admin` (override with `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD`). Change port with `GRAFANA_PORT`. |
+| Prometheus | http://localhost:9090 | Targets, rules, and firing alerts: **Status → Targets** and **Alerts**. Change port with `PROMETHEUS_PORT`. |
+
+Dashboard **EOP SLO Overview** is loaded automatically from `monitoring/grafana/dashboards/eop-slo-overview.json` (no manual import).
+
+**How to read the panels (scaffold):**
+
+1. **Uptime % (24h, TCP probe)** — Successful TCP connects (blackbox) to the EOP TCP port over 24h. Complements `/metrics`: TCP can be up while the process misbehaves.
+2. **Error budget remaining (proxy)** — Linear proxy vs **99.9%** using the TCP probe; tune when you base the budget on `eop_messages_total` success ratio (ADR-009).
+3. **Requests/s** — `rate(eop_messages_total{job="eop-server"}[5m])` by **operation** label (`REGISTER`, `QUERY_NODE`, `LIST_NODES`, `HEARTBEAT`, `UNKNOWN`).
+4. **P99 latency** — P99 of **`eop_message_duration_seconds`** (handler time after a valid frame read), by **operation**.
+
+Prometheus scrapes every **15s** (global `scrape_interval`). Alert **EOPErrorBudgetProxyBelow50** fires when the proxy budget stays under 50% for 2 minutes; see **Prometheus → Alerts** (wire Alertmanager or Grafana contact points later for email/Slack/log shipping).
 
 ```bash
 make logs           # stream server logs

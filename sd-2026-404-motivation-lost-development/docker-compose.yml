@@ -10,7 +10,9 @@
 #   docker compose logs -f eop-server   → ver logs del servidor
 #
 # UI de SigNoz: http://localhost:8080
-# Servidor EOP: localhost:9026
+# Prometheus: http://localhost:9090
+# Grafana:    http://localhost:3000 (admin / admin por defecto, ver README)
+# Servidor EOP: localhost:9026  |  métricas Prometheus: localhost:9464/metrics
 
 services:
   # ----------------------------------------------------------------
@@ -30,8 +32,10 @@ services:
       EOP_HEARTBEAT_INTERVAL: "${EOP_HEARTBEAT_INTERVAL:-5}"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
       OTEL_SERVICE_NAME: "eop-server"
+      EOP_METRICS_PORT: "${EOP_METRICS_PORT:-9464}"
     ports:
       - "${EOP_PORT:-9026}:${EOP_PORT:-9026}"
+      - "${EOP_METRICS_PORT:-9464}:${EOP_METRICS_PORT:-9464}"
     healthcheck:
       test: ["CMD", "./eop_health"]
       interval: 10s
@@ -148,6 +152,66 @@ services:
     volumes:
       - zookeeper-data:/bitnami/zookeeper/data
       - zookeeper-datalog:/bitnami/zookeeper/datalog
+    networks:
+      - eop-net
+
+  # ----------------------------------------------------------------
+  # Blackbox exporter (TCP → eop-server) — SLI de disponibilidad sin /metrics
+  # ----------------------------------------------------------------
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.25.0
+    container_name: eop-blackbox-exporter
+    restart: unless-stopped
+    command:
+      - "--config.file=/config/blackbox.yml"
+    volumes:
+      - ./monitoring/prometheus/blackbox.yml:/config/blackbox.yml:ro
+    networks:
+      - eop-net
+
+  # ----------------------------------------------------------------
+  # Prometheus (US-205) — scrape 15s, rules + alerts
+  # ----------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: eop-prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules:ro
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    depends_on:
+      blackbox-exporter:
+        condition: service_started
+    networks:
+      - eop-net
+
+  # ----------------------------------------------------------------
+  # Grafana (US-205) — dashboards provisionados desde el repo
+  # ----------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: eop-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:-admin}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:-admin}"
+      GF_USERS_DEFAULT_THEME: dark
+      GF_SERVER_HTTP_PORT: "3000"
+      GF_INSTALL_PLUGINS: ""
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    depends_on:
+      prometheus:
+        condition: service_started
     networks:
       - eop-net
 

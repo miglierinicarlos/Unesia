@@ -1,7 +1,9 @@
 #include "connectionWorker.hpp"
 #include "messageSerializer.hpp"
 #include "otelScope.hpp"
+#include "prometheusMetrics.hpp"
 
+#include <chrono>
 #include <cerrno>
 #include <cstring>
 #include <iostream>
@@ -148,6 +150,8 @@ void ConnectionWorker::handleConnection(int clientFd, const ConnectionContext& c
         // A valid protocol frame was received; this is real traffic.
         ensureConnectionSpan();
 
+        const auto handlerStart = std::chrono::steady_clock::now();
+
         // Dispatch by message type.
         switch (result.messageType)
         {
@@ -202,6 +206,9 @@ void ConnectionWorker::handleConnection(int clientFd, const ConnectionContext& c
                 break;
             }
         }
+
+        const auto handlerEnd = std::chrono::steady_clock::now();
+        PrometheusMetrics::instance().recordMessage(result.messageType, handlerEnd - handlerStart);
     }
 
     if (connectionSpan && reason != DisconnectReason::CLEAN_DISCONNECT)

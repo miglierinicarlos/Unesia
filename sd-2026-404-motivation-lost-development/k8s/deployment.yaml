@@ -19,6 +19,10 @@ spec:
     metadata:
       labels:
         app: eop-server
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9464"
+        prometheus.io/path: "/metrics"
     spec:
       restartPolicy: Always
       containers:
@@ -31,6 +35,9 @@ spec:
           ports:
             - name: eop-tcp
               containerPort: 9026
+              protocol: TCP
+            - name: metrics
+              containerPort: 9464
               protocol: TCP
           resources:
             requests:

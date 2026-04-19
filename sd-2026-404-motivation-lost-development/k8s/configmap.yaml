@@ -7,6 +7,7 @@ metadata:
   namespace: default
 data:
   EOP_PORT: "9026"
+  EOP_METRICS_PORT: "9464"
   EOP_IDLE_TIMEOUT: "30"
   EOP_THREAD_POOL_SIZE: "16"
   EOP_MAX_CLIENTS: "10000"

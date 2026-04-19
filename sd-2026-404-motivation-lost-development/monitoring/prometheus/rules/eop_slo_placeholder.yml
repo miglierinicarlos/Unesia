@@ -1,0 +1,8 @@
+# Recording rules scaffold (US-205). Extend when app histograms exist.
+groups:
+  - name: eop_slo_placeholders
+    interval: 15s
+    rules:
+      # TCP probe success (1 = up) for eop-server from blackbox exporter.
+      - record: eop:tcp_probe:avg24h
+        expr: avg_over_time(probe_success{job="eop-tcp-probe"}[24h])

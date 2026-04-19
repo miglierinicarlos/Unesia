@@ -1,0 +1,15 @@
+# Prometheus alerting (US-205 AC3 scaffold). Complement with Grafana contact points if needed.
+groups:
+  - name: eop_error_budget
+    interval: 15s
+    rules:
+      - alert: EOPErrorBudgetProxyBelow50
+        expr: |
+          (100 * clamp_max(clamp_min((avg_over_time(probe_success{job="eop-tcp-probe"}[24h]) - 0.999) / 0.001, 0), 1)) < 50
+        for: 2m
+        labels:
+          severity: warning
+          service: eop-server
+        annotations:
+          summary: "EOP TCP error-budget proxy below 50% (24h rolling)"
+          description: "Placeholder SLI from blackbox TCP probe; replace when app exposes request-level SLIs."

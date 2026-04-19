@@ -22,6 +22,8 @@ struct ServerConfig
 {
     // Defaults
     static constexpr uint16_t DEFAULT_PORT = 9026;
+    /// HTTP /metrics (Prometheus). 0 disables exposition (tests).
+    static constexpr uint16_t DEFAULT_METRICS_PORT = 9464;
     static constexpr uint32_t DEFAULT_IDLE_TIMEOUT = 30;
     static constexpr uint32_t DEFAULT_THREAD_POOL_SIZE = 16;
     static constexpr uint32_t DEFAULT_MAX_CLIENTS = 10000;
@@ -29,6 +31,7 @@ struct ServerConfig
 
     // Fields
     uint16_t m_port;                  ///< EOP_PORT             (1–65535,  default 9026)
+    uint16_t m_metricsPort;           ///< EOP_METRICS_PORT     (0=off, 1–65535, default 9464)
     uint32_t m_idleTimeoutSecs;       ///< EOP_IDLE_TIMEOUT     (1–3600,   default 30)
     uint32_t m_threadPoolSize;        ///< EOP_THREAD_POOL_SIZE (1–256,    default 16)
     uint32_t m_maxClients;            ///< EOP_MAX_CLIENTS      (1–100000, default 10000)
