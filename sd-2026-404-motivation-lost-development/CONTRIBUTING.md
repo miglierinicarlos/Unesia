@@ -38,6 +38,45 @@ git checkout -b feature/my-feature
 
 ---
 
+# Working with `pruebas` branch
+
+If you need to bring your latest work into `pruebas` for testing/demo purposes,
+sync your branch first and then update `pruebas` explicitly.
+
+Recommended sequence:
+
+```bash
+# 1) Save your local changes
+git status
+git add .
+git commit -m "chore: save local progress before updating pruebas"
+
+# 2) Sync integration branch
+git checkout development
+git pull origin development
+
+# 3) Move to pruebas and update it
+git checkout pruebas
+git pull origin pruebas
+
+# 4) Bring your work into pruebas
+# Option A (recommended for shared history): merge development
+git merge development
+
+# Option B (linear history): rebase pruebas onto development
+# git rebase development
+
+# 5) Resolve conflicts if needed, run tests, and push
+git push origin pruebas
+```
+
+Notes:
+- Use `merge` when multiple contributors are integrating concurrently.
+- Use `rebase` only if your team allows rewriting branch history.
+- Open a PR from `pruebas` to the target branch if your process requires review.
+
+---
+
 # Commit Guidelines
 
 Use clear and descriptive commit messages.

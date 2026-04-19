@@ -54,6 +54,25 @@ distributed tracing.
 
 ## Quick Start
 
+If you are already inside `sd-2026-404-motivation-lost-development`, the
+fastest local flow is:
+
+```bash
+# 1) Configure (requires VCPKG_ROOT)
+cmake -S . -B build \
+  -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
+  -DCMAKE_BUILD_TYPE=Release
+
+# 2) Build
+cmake --build build -j"$(nproc)"
+
+# 3) Run server
+./build/exodus_app
+
+# 4) In another terminal, run tests
+ctest --test-dir build --output-on-failure
+```
+
 ### Docker Compose (recommended)
 
 Launches the full stack: eop-server, OTel Collector, SigNoz, ClickHouse, ZooKeeper.
@@ -70,6 +89,32 @@ make logs           # stream server logs
 make down           # tear down the stack
 make check-size     # verify runtime image ≤ 50 MB (ADR-006)
 ```
+
+### Multi-PC demo (same LAN)
+
+To reproduce the "one PC connects and another PC sees loaded nodes" demo:
+
+1. Run **one shared server** on PC-A.
+2. Connect clients from PC-B/PC-C to the **IP of PC-A** (same TCP port).
+3. Query nodes from any client connected to that same server instance.
+
+Example:
+
+```bash
+# PC-A (server host)
+hostname -I                    # identify server LAN IP, e.g. 192.168.1.20
+EOP_PORT=9026 ./build/exodus_app
+
+# PC-B / PC-C (clients)
+# Use the server IP (not 127.0.0.1)
+eop_connect("192.168.1.20", 9026, 5000);
+```
+
+Networking checklist:
+- Open TCP port `9026` in the server host firewall.
+- Verify both machines are in the same network/VPN and can ping each other.
+- Avoid starting isolated local stacks if you want to share node state across PCs.
+- Full Spanish step-by-step guide: `docs/GUIA_PASO_A_PASO_LAN.md`.
 
 ### Kubernetes
 
