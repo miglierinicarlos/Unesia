@@ -1,0 +1,52 @@
+# k8s/hpc-engine-deployment.yaml
+# AC1 US-204: restartPolicy Always + liveness probe TCP al puerto de salud del HPC engine.
+# AC2 US-204: readiness probe exec ./eop_health — verifica que el proceso está activo y registrado contra el servidor.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eop-hpc-engine
+  namespace: default
+  labels:
+    app: eop-hpc-engine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eop-hpc-engine
+  template:
+    metadata:
+      labels:
+        app: eop-hpc-engine
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: eop-hpc-engine
+          image: eop-hpc-engine:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: eop-server-config
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "2000m"
+              memory: "1Gi"
+          livenessProbe:
+            tcpSocket:
+              port: 9027
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - ./eop_health
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3

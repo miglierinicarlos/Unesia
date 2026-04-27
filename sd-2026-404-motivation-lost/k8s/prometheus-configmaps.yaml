@@ -1,0 +1,29 @@
+apiVersion: v1
+data:
+  alerts.yaml: "# Prometheus alerting (US-205 AC3 scaffold). Complement with Grafana
+    contact points if needed.\r\ngroups:\r\n  - name: eop_error_budget\r\n    interval:
+    15s\r\n    rules:\r\n      - alert: EOPErrorBudgetProxyBelow50\r\n        expr:
+    |\r\n          1 - (rate(eop_requests_total{result=\"error\"}[1h]) / rate(eop_requests_total[1h]))
+    < 0.5\r\n        for: 2m\r\n        labels:\r\n          severity: warning\r\n
+    \         service: eop-server\r\n        annotations:\r\n          summary: \"EOP
+    TCP error-budget proxy below 50% (24h rolling)\"\r\n          description: \"Placeholder
+    SLI from blackbox TCP probe; replace when app exposes request-level SLIs.\"\r\n"
+  prometheus.yml: "# Prometheus configuration — EOP v0.2 (US-205 scaffold)\r\n# AC4:
+    default scrape interval 15s (global + per-job).\r\n\r\nglobal:\r\n  scrape_interval:
+    15s\r\n  evaluation_interval: 15s\r\n\r\nrule_files:\r\n  - /etc/prometheus/rules/*.yml\r\n\r\nscrape_configs:\r\n
+    \ - job_name: prometheus\r\n    static_configs:\r\n      - targets: [\"localhost:9090\"]\r\n\r\n
+    \ - job_name: eop-server\r\n    scrape_interval: 15s\r\n    kubernetes_sd_configs:\r\n
+    \     - role: pod\r\n    relabel_configs:\r\n      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]\r\n
+    \       action: keep\r\n        regex: true\r\n      - source_labels: [__address__,
+    __meta_kubernetes_pod_annotation_prometheus_io_port]\r\n        action: replace\r\n
+    \       regex: ([^:]+)(?::\\d+)?;(\\d+)\r\n        replacement: $1:$2\r\n        target_label:
+    __address__\r\n\r\n  # Blackbox TCP probe: 1 = connection accepted (complement
+    to /metrics).\r\n  - job_name: eop-tcp-probe\r\n    metrics_path: /probe\r\n    params:\r\n
+    \     module: [tcp_connect]\r\n    relabel_configs:\r\n      - source_labels:
+    [__address__]\r\n        target_label: __param_target\r\n      - source_labels:
+    [__param_target]\r\n        target_label: instance\r\n      - target_label: __address__\r\n
+    \       replacement: blackbox-exporter:9115\r\n    static_configs:\r\n      -
+    targets:\r\n          - eop-server:9026\r\n"
+kind: ConfigMap
+metadata:
+  name: prometheus-config

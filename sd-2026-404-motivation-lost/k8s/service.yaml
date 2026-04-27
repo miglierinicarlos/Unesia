@@ -1,0 +1,22 @@
+# k8s/service.yaml
+# AC5 US-108: expone el servidor dentro del cluster.
+apiVersion: v1
+kind: Service
+metadata:
+  name: eop-server
+  namespace: default
+  labels:
+    app: eop-server
+spec:
+  selector:
+    app: eop-server
+  ports:
+    - name: eop-tcp
+      protocol: TCP
+      port: 9026
+      targetPort: eop-tcp
+    - name: metrics
+      protocol: TCP
+      port: 9090
+      targetPort: metrics
+  type: ClusterIP

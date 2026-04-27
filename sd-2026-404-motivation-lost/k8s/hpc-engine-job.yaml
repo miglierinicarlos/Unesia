@@ -1,0 +1,36 @@
+# k8s/hpc-engine-job.yaml
+# AC5 US-204: HPC engine can run as a Kubernetes Job for one-shot batch analysis.
+# The engine connects to the server, processes a single ANALYZE_GRAPH request, and exits.
+# HPC_MODE=batch is injected directly here — not in the ConfigMap — so the Deployment
+# manifest keeps defaulting to continuous (long-running) mode without this variable.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: eop-hpc-engine-job
+  namespace: default
+  labels:
+    app: eop-hpc-engine
+    mode: batch
+spec:
+  ttlSecondsAfterFinished: 300  # auto-cleanup: prevents completed pod accumulation
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: eop-hpc-engine
+          image: eop-hpc-engine:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: eop-server-config
+          env:
+            - name: HPC_MODE
+              value: "batch"  # engine exits after one ANALYZE_GRAPH instead of looping
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "2000m"
+              memory: "1Gi"

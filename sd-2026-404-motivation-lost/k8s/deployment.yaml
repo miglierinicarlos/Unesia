@@ -1,0 +1,60 @@
+# k8s/deployment.yaml
+# AC5 US-108: kubectl apply -f k8s/ despliega sin pasos adicionales.
+# AC6 US-108: config via ConfigMap, sin valores hardcodeados.
+# AC1 US-109: restartPolicy Always + liveness probe TCP al puerto del servidor.
+# AC2 US-109: readiness probe TCP — pod queda NotReady hasta que el server acepte conexiones.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eop-server
+  namespace: default
+  labels:
+    app: eop-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eop-server
+  template:
+    metadata:
+      labels:
+        app: eop-server
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: eop-server
+          image: eop-server:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: eop-server-config
+          ports:
+            - name: eop-tcp
+              containerPort: 9026
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            tcpSocket:
+              port: eop-tcp
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: eop-tcp
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            failureThreshold: 3

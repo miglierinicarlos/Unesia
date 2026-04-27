@@ -1,0 +1,190 @@
+# docker-compose.yml
+#
+# Stack completo EOP v0.1
+# PRIMER USO:
+#   make deploy-local
+#
+# USO NORMAL:
+#   docker compose up -d        → levanta
+#   docker compose down         → baja
+#   docker compose logs -f eop-server   → ver logs del servidor
+#
+# UI de SigNoz: http://localhost:8080
+# Servidor EOP: localhost:9026
+
+services:
+  # ----------------------------------------------------------------
+  # EOP Server
+  # ----------------------------------------------------------------
+  eop-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: eop-server
+    restart: unless-stopped
+    environment:
+      EOP_PORT: "${EOP_PORT:-9026}"
+      EOP_IDLE_TIMEOUT: "${EOP_IDLE_TIMEOUT:-30}"
+      EOP_THREAD_POOL_SIZE: "${EOP_THREAD_POOL_SIZE:-16}"
+      EOP_MAX_CLIENTS: "${EOP_MAX_CLIENTS:-10000}"
+      EOP_HEARTBEAT_INTERVAL: "${EOP_HEARTBEAT_INTERVAL:-5}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      OTEL_SERVICE_NAME: "eop-server"
+    ports:
+      - "${EOP_PORT:-9026}:${EOP_PORT:-9026}"
+    healthcheck:
+      test: ["CMD", "./eop_health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    depends_on:
+      otel-collector:
+        condition: service_started
+    networks:
+      - eop-net
+
+  # ----------------------------------------------------------------
+  # EOP HPC Engine
+  # ----------------------------------------------------------------
+  eop-hpc-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile.hpc
+    container_name: eop-hpc-engine
+    restart: unless-stopped
+    environment:
+      EOP_SERVER_HOST: "${EOP_SERVER_HOST:-eop-server}"
+      EOP_PORT: "${EOP_PORT:-9026}"
+      OMP_NUM_THREADS: "${OMP_NUM_THREADS:-2}"
+      HPC_NODE_ID: "${HPC_NODE_ID:-hpc-engine-0}"
+      EOP_HPC_TIMEOUT: "${EOP_HPC_TIMEOUT:-30}"
+      HPC_HEALTH_PORT: "${HPC_HEALTH_PORT:-9027}"
+    healthcheck:
+      test: ["CMD", "./eop_health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    depends_on:
+      eop-server:
+        condition: service_healthy
+    networks:
+      - eop-net
+
+  # ----------------------------------------------------------------
+  # OTel Collector de SigNoz
+  # ----------------------------------------------------------------
+  otel-collector:
+    image: signoz/signoz-otel-collector:v0.144.2
+    container_name: signoz-otel-collector
+    restart: unless-stopped
+    command:
+      - "--config=/etc/otel-collector-config.yaml"
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "4318:4318"
+    depends_on:
+      signoz:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:13133"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    networks:
+      - eop-net
+
+  # ----------------------------------------------------------------
+  # SigNoz
+  # ----------------------------------------------------------------
+  signoz:
+    image: signoz/signoz:v0.117.1
+    container_name: signoz
+    restart: unless-stopped
+    environment:
+      - SIGNOZ_TELEMETRYSTORE_CLICKHOUSE_DSN=tcp://signoz:signoz@clickhouse:9000
+      - SIGNOZ_SQLSTORE_SQLITE_PATH=/var/lib/signoz/signoz.db
+      - SIGNOZ_TELEMETRY_ENABLED=true
+      - GODEBUG=netdns=go
+      - DEPLOYMENT_TYPE=docker-standalone-amd
+    volumes:
+      - signoz-data:/var/lib/signoz
+    ports:
+      - "8080:8080"
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      zookeeper:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/api/v1/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - eop-net
+
+  # ----------------------------------------------------------------
+  # ClickHouse
+  # ----------------------------------------------------------------
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.5.6
+    container_name: signoz-clickhouse
+    restart: unless-stopped
+    environment:
+      - CLICKHOUSE_DB=signoz_metrics
+      - CLICKHOUSE_USER=signoz
+      - CLICKHOUSE_PASSWORD=signoz
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+
+    volumes:
+      - ./monitoring/clickhouse/config.xml:/etc/clickhouse-server/config.xml
+      - ./monitoring/clickhouse/users.xml:/etc/clickhouse-server/users.xml
+      - ./monitoring/clickhouse/custom-function.xml:/etc/clickhouse-server/custom-function.xml
+      - ./monitoring/clickhouse/cluster.xml:/etc/clickhouse-server/config.d/cluster.xml
+      - clickhouse-data:/var/lib/clickhouse
+    depends_on:
+      zookeeper:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "clickhouse-client --query 'SELECT 1' >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    networks:
+      - eop-net
+
+  # ----------------------------------------------------------------
+  # ZooKeeper
+  # ----------------------------------------------------------------
+  zookeeper:
+    image: signoz/zookeeper:3.7.1
+    container_name: signoz-zookeeper
+    restart: unless-stopped
+    hostname: zookeeper
+    environment:
+      - ZOO_SERVER_ID=1
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOO_AUTOPURGE_INTERVAL=1
+    volumes:
+      - zookeeper-data:/bitnami/zookeeper/data
+      - zookeeper-datalog:/bitnami/zookeeper/datalog
+    networks:
+      - eop-net
+
+networks:
+  eop-net:
+    driver: bridge
+
+volumes:
+  clickhouse-data:
+  signoz-data:
+  zookeeper-data:
+  zookeeper-datalog:

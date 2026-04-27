@@ -1,0 +1,137 @@
+name: "Epic"
+description: "High-level feature epic containing multiple user stories. Maps to a PRD Epic (E1-E13)."
+title: "[EPIC] E<NUMBER> — <Title>"
+labels: ["epic", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Epic Overview
+        Fill in the fields below to define the epic scope, traceability, and acceptance criteria.
+
+  - type: input
+    id: epic_id
+    attributes:
+      label: Epic ID
+      description: "Epic identifier from the PRD (e.g., E1, E2)"
+      placeholder: "E1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Milestone
+      description: "Target milestone for this epic"
+      options:
+        - M0
+        - M1
+        - M2
+        - M3
+        - M4
+    validations:
+      required: true
+
+  - type: dropdown
+    id: release
+    attributes:
+      label: Release
+      description: "Target release version"
+      options:
+        - v0.1
+        - v0.2
+        - v0.3
+        - v1.0
+    validations:
+      required: true
+
+  - type: input
+    id: prd_section
+    attributes:
+      label: PRD Section
+      description: "Reference to the PRD section (e.g., Section 3, Epic E1)"
+      placeholder: "Section 3, Epic E1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: persona
+    attributes:
+      label: Persona
+      description: "Primary persona for this epic"
+      options:
+        - Vault Operator
+        - Network Analyst
+        - Integration Engineer
+        - Edge Device
+    validations:
+      required: true
+
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      description: "What does this epic deliver from the user's perspective? Adapt from the PRD Release Goal for the corresponding milestone."
+      placeholder: "One paragraph describing the epic objective..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: user_stories
+    attributes:
+      label: User Stories (Sub-Issues)
+      description: "Create each story as a separate issue using the User Story template. Link them here."
+      placeholder: |
+        - [ ] #issue US-XXX — Title
+        - [ ] #issue US-XXX — Title
+        - [ ] #issue US-XXX — Title
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Epic-Level Acceptance Criteria
+      description: "Criteria that must be met for the entire epic to be considered Done."
+      value: |
+        - [ ] All user stories in this epic are **Done**
+        - [ ] End-to-end integration test for the epic flow passes
+        - [ ] Zero regressions in previous milestone functionality
+        - [ ] Documentation updated (README, relevant ADRs)
+        - [ ] CI pipeline green on release branch
+    validations:
+      required: true
+
+  - type: textarea
+    id: adrs
+    attributes:
+      label: Architecture Decisions
+      description: "List ADRs governing this epic"
+      placeholder: |
+        - ADR-XXX: Title
+        - ADR-XXX: Title
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: "What must be completed before this epic can start?"
+      placeholder: |
+        - [ ] Prerequisite epic, story, or external dependency
+    validations:
+      required: false
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks
+      description: "Identify risks and mitigation strategies"
+      placeholder: |
+        | Risk | Prob. | Mitigation |
+        |------|-------|------------|
+        | Risk description | H/M/L | Strategy |
+    validations:
+      required: false

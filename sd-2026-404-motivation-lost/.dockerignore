@@ -1,0 +1,12 @@
+build
+build/
+vcpkg
+vcpkg/
+coverage_html
+coverage.info
+debug_output.txt
+salida_completa.txt
+salida_nueva.txt
+llvm-gcov.sh
+.git
+.gitignore
