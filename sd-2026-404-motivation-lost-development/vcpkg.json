@@ -1,8 +1,0 @@
-{
-  "name": "cyberpunk-cordoba-2077",
-  "version-string": "0.1.0",
-  "dependencies": [
-    "gtest",
-    "nlohmann-json"
-  ]
-}
